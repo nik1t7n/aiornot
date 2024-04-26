@@ -3,6 +3,7 @@ import React, { useState, ChangeEvent } from 'react';
 const HomePage: React.FC = () => {
   const [textInput, setTextInput] = useState<string>('');
   const [prediction, setPrediction] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setTextInput(e.target.value);
@@ -10,6 +11,7 @@ const HomePage: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true); // Устанавливаем loading в true перед отправкой запроса
       const response = await fetch('https://online-model-api-9ec5c8fd2c16.herokuapp.com/predict', {
         method: 'POST',
         headers: {
@@ -21,12 +23,15 @@ const HomePage: React.FC = () => {
       setPrediction(data.prediction);
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false); // Устанавливаем loading в false после получения ответа
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 style={{ }}">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-3xl font-medium mb-4">AI or Not?</h1>
+      <p className="text-xs font-thin text-gray-500 mb-2">Please note: This model only supports English language.</p>
       <textarea
         className="w-80 h-40 p-2 border border-gray-300 rounded-md mb-4 drop-shadow-sm"
         placeholder="Enter text here..."
@@ -36,8 +41,9 @@ const HomePage: React.FC = () => {
       <button
         className="px-4 py-2 bg-lime-600 text-white rounded-md shadow-md transition duration-300 hover:bg-amber-600"
         onClick={handleSubmit}
+        disabled={loading} // Делаем кнопку неактивной во время загрузки
       >
-        Predict
+        {loading ? 'Loading...' : 'Predict'} {/* Показываем "Loading..." во время загрузки */}
       </button>
       {prediction !== null && (
         <p className="mt-4 text-xl font-medium">
